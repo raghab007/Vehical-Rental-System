@@ -1,0 +1,92 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+
+    model User {
+      id            Int       @id @default(autoincrement())
+      email         String    @unique
+      firstName     String
+      lastName      String
+      password      String
+      contactNumber String
+      address       String
+      role          String?   @default("user")
+      rentals       Rental[]
+    }
+
+    model Vehicle {
+      id            Int       @id @default(autoincrement())
+      vehicleName   String
+      type          String
+      model         String
+      company       String
+      fuelType      String
+      passengerSeat Int
+      imageUrl      String
+      pricePerHour  Int
+      description   String
+      available     Int
+      rented        Int
+      rentals       Rental[]
+    }
+
+   model Rental {
+  id         Int     @id @default(autoincrement())
+  user       User    @relation(fields: [userId], references: [id])
+  userId     Int
+  vehicle    Vehicle @relation(fields: [vehicleId], references: [id])
+  vehicleId  Int
+  startTime  DateTime
+  endTime    DateTime
+  status     String  @default("active") // active, completed, pending_extension
+  amount     Int
+  paymentStatus String? @default("unpaid") // unpaid, initiated, completed, failed
+  extensionRequests RentalExtensionRequest[]
+  createdAt   DateTime 
+
+}
+
+
+
+     model RentalExtensionRequest {
+    id          Int      @id @default(autoincrement())
+    rental      Rental   @relation(fields: [rentalId], references: [id])
+    rentalId    Int
+    requestedEndTime DateTime
+    additionalAmount Int
+    paymentStatus String @default("pending") // pending, paid, failed
+    status      String   @default("pending") // pending, approved, rejected
+    startTime   DateTime 
+    endTime   DateTime @updatedAt
+    createdAt   DateTime @default(now())
+
+  }
+
+
+  model AdventurePackage {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  duration    String   // e.g. "3 Night 4 days"
+  inclusions  String   // e.g. "Fooding and lodging"
+  vehicleType String   // e.g. "Offroad"
+  startPoint  String   // e.g. "Starts from Kathmandu"
+  price       String   // e.g. "Npr: 16,000"
+  imageUrl    String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
